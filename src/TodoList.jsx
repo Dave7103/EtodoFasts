@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import axios from "axios";
 
-const API_URL = "https://etodo-app.onrender.com/api/post/";
+const API_URL = "https://etodofasts.onrender.com";
 
 export default function TodoList() {
   const [tasks, setTasks] = useState([]);
