@@ -5,14 +5,21 @@ from . import models, schemas, crud
 from .database import engine, SessionLocal, Base
 from fastapi.middleware.cors import CORSMiddleware
 
+DATABASE_URL = os.getenv("DATABASE_URL")
+
 Base.metadata.create_all(bind=engine)
 
 app = FastAPI()
 
+# CORS settings
+origins = [
+    "https://dave7103.github.io",  # Make sure your frontend domain is listed
+]
+
 # CORS (for React frontend)
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],  # Replace with frontend URL in prod
+    allow_origins=origins,  # Replace with frontend URL in prod
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
