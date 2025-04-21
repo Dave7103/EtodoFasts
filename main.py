@@ -49,11 +49,11 @@ def filter_todo(completed: bool, db: Session = Depends(get_db)):
     return crud.filter_todos(db, completed)
 
 @app.post("/todos", response_model=schemas.TodoInDB)
-def create_todo(todo: schemas.ToDoCreate, db: Session = Depends(get_db)):
+def create_todo(todo: schemas.TodoCreate, db: Session = Depends(get_db)):
     return crud.create_todo(db, todo)
 
 @app.put("/todos/{todo_id}", response_model=schemas.TodoInDB)
-def update_todo(todo_id: int, todo: schemas.ToDoUpdate, db: Session = Depends(get_db)):
+def update_todo(todo_id: int, todo: schemas.TodoUpdate, db: Session = Depends(get_db)):
     return crud.update_todo(db, todo_id, todo)
 
 @app.delete("/todos/{todo_id}")
