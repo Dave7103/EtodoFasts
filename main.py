@@ -4,9 +4,6 @@ from sqlalchemy.orm import Session
 import models, schemas, crud 
 from database import engine, SessionLocal, Base
 from fastapi.middleware.cors import CORSMiddleware
-import os
-
-DATABASE_URL = os.getenv("DATABASE_URL")
 
 Base.metadata.create_all(bind=engine)
 
