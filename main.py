@@ -33,6 +33,10 @@ def get_db():
     finally:
         db.close()
 
+@app.get("/")
+def read_root():
+    return {"message": "Hello, World!"}
+
 @app.get("/todos", response_model=list[schemas.TodoInDB])
 def read_todos(db: Session = Depends(get_db)):
     return crud.get_todos(db)
