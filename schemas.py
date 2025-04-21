@@ -15,3 +15,9 @@ class Todo(BaseModel):
 
     class Config:
         orm_mode = True  # Allows SQLAlchemy objects to be converted to Pydantic models
+
+class TodoInDB(Todo):
+    id: int
+
+    class Config:
+        orm_mode = True  # or from_attributes = True (if using Pydantic v2)
