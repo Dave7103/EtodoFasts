@@ -15,7 +15,7 @@ def create_todo(db: Session, todo: schemas.TodoCreate):
     db.refresh(db_todo)
     return db_todo
 
-def update_todo(db: Session, todo_id: int, todo: schemas.ToDoUpdate):
+def update_todo(db: Session, todo_id: int, todo: schemas.TodoUpdate):
     db_todo = get_todo(db, todo_id)
     if db_todo:
         db_todo.title = todo.title
