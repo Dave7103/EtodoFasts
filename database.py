@@ -4,7 +4,7 @@ from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import sessionmaker
 import os
 
-DATABASE_URL = "postgresql://todofastapi_v2g7_user:erMWTu3PyspcAuQn76vUJKyI5egFmo7f@dpg-d02udcje5dus73c5rdgg-a/todofastapi_v2g7"
+DATABASE_URL = "postgresql://fastsapi_user:P2PUAADQYAH1vCj7VRojdXSfBb6w3nXR@dpg-d0qr4druibrs73es7h2g-a.virginia-postgres.render.com/fastsapi"
 
 engine = create_engine(DATABASE_URL)
 SessionLocal = sessionmaker(bind=engine, autocommit=False, autoflush=False)
