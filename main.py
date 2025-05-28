@@ -1,31 +1,26 @@
-# app/main.py
-from fastapi import FastAPI, Depends, HTTPException
+from fastapi import Depends, FastAPI, HTTPException
 from sqlalchemy.orm import Session
-import models, schemas, crud 
-from database import engine, SessionLocal, Base
+from typing import List, Optional
 from fastapi.middleware.cors import CORSMiddleware
-import os
+import models
+import schemas
+from database import SessionLocal, engine
 
-DATABASE_URL = os.getenv("DATABASE_URL")
-
-Base.metadata.create_all(bind=engine)
+# Create database tables
+models.Base.metadata.create_all(bind=engine)
 
 app = FastAPI()
 
-# CORS settings
-origins = [
-    "https://dave7103.github.io",  # Make sure your frontend domain is listed
-]
-
-# CORS (for React frontend)
+# Enable CORS for frontend integration
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=origins,  # Replace with frontend URL in prod
+    allow_origins=["*"],  # Adjust in production to specific frontend URL
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
 )
 
+# Dependency to get database session
 def get_db():
     db = SessionLocal()
     try:
@@ -33,34 +28,46 @@ def get_db():
     finally:
         db.close()
 
-@app.get("/")
-def read_root():
-    return {"message": "Hello, World!"}
+# CRUD Endpoints
+@app.post("/todos", response_model=schemas.Todo)
+def create_todo(todo: schemas.TodoCreate, db: Session = Depends(get_db)):
+    db_todo = models.Todo(title=todo.title)
+    db.add(db_todo)
+    db.commit()
+    db.refresh(db_todo)
+    return db_todo
 
-@app.get("/todos", response_model=list[schemas.TodoInDB])
-def read_todos(db: Session = Depends(get_db)):
-    return crud.get_todos(db)
+@app.get("/todos", response_model=List[schemas.Todo])
+def read_todos(completed: Optional[bool] = None, db: Session = Depends(get_db)):
+    if completed is None:
+        return db.query(models.Todo).all()
+    return db.query(models.Todo).filter(models.Todo.completed == completed).all()
 
-@app.get("/todos/{todo_id}", response_model=schemas.TodoInDB)
-def read_todo(todo_id: int, db: Session = Depends(get_db)):
-    todo = crud.get_todo(db, todo_id)
-    if not todo:
-        raise HTTPException(status_code=404, detail="ToDo not found")
+@app.get("/todos/{id}", response_model=schemas.Todo)
+def read_todo(id: int, db: Session = Depends(get_db)):
+    todo = db.query(models.Todo).filter(models.Todo.id == id).first()
+    if todo is None:
+        raise HTTPException(status_code=404, detail="Todo not found")
     return todo
 
-@app.get("/todos/filter/{completed}", response_model=list[schemas.TodoInDB])
-def filter_todo(completed: bool, db: Session = Depends(get_db)):
-    return crud.filter_todos(db, completed)
+@app.put("/todos/{id}", response_model=schemas.Todo)
+def update_todo(id: int, todo: schemas.TodoUpdate, db: Session = Depends(get_db)):
+    db_todo = db.query(models.Todo).filter(models.Todo.id == id).first()
+    if db_todo is None:
+        raise HTTPException(status_code=404, detail="Todo not found")
+    if todo.title is not None:
+        db_todo.title = todo.title
+    if todo.completed is not None:
+        db_todo.completed = todo.completed
+    db.commit()
+    db.refresh(db_todo)
+    return db_todo
 
-@app.post("/todos", response_model=schemas.TodoInDB)
-def create_todo(todo: schemas.TodoCreate, db: Session = Depends(get_db)):
-    return crud.create_todo(db, todo)
-
-@app.put("/todos/{todo_id}", response_model=schemas.TodoInDB)
-def update_todo(todo_id: int, todo: schemas.TodoUpdate, db: Session = Depends(get_db)):
-    return crud.update_todo(db, todo_id, todo)
-
-@app.delete("/todos/{todo_id}")
-def delete_todo(todo_id: int, db: Session = Depends(get_db)):
-    crud.delete_todo(db, todo_id)
-    return {"detail": "ToDo deleted"}
+@app.delete("/todos/{id}")
+def delete_todo(id: int, db: Session = Depends(get_db)):
+    db_todo = db.query(models.Todo).filter(models.Todo.id == id).first()
+    if db_todo is None:
+        raise HTTPException(status_code=404, detail="Todo not found")
+    db.delete(db_todo)
+    db.commit()
+    return {"message": "Todo deleted"}
